@@ -3,8 +3,8 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/auth-context'
 import { WebSocketProvider } from '@/contexts/websocket-context'
+import { ErrorBoundary, PageErrorBoundary } from '@/components/error-boundary'
 
-// Lazy load modules for better performance
 import { lazy, Suspense } from 'react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
@@ -21,30 +21,114 @@ const ReportsPage = lazy(() => import('@/modules/reports/pages/ReportsPage').the
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="tracking-ui-theme">
-      <AuthProvider>
-        <WebSocketProvider>
-          <AppLayout>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/user-journey" element={<UserJourneyPage />} />
-                <Route path="/monitoring" element={<MonitoringPage />} />
-                <Route path="/events" element={<EventsPage />} />
-                <Route path="/errors" element={<ErrorsPage />} />
-                <Route path="/alerts" element={<AlertsPage />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/performance" element={<PerformancePage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </Suspense>
-          </AppLayout>
-        </WebSocketProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary level="global">
+      <ThemeProvider defaultTheme="light" storageKey="tracking-ui-theme">
+        <AuthProvider>
+          <WebSocketProvider>
+            <AppLayout>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+                  {/* Cada rota envolvida em PageErrorBoundary */}
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <PageErrorBoundary pageName="Dashboard">
+                        <DashboardPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/analytics"
+                    element={
+                      <PageErrorBoundary pageName="Analytics">
+                        <AnalyticsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/user-journey"
+                    element={
+                      <PageErrorBoundary pageName="User Journey">
+                        <UserJourneyPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/monitoring"
+                    element={
+                      <PageErrorBoundary pageName="Monitoring">
+                        <MonitoringPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/events"
+                    element={
+                      <PageErrorBoundary pageName="Events">
+                        <EventsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/errors"
+                    element={
+                      <PageErrorBoundary pageName="Errors">
+                        <ErrorsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/alerts"
+                    element={
+                      <PageErrorBoundary pageName="Alerts">
+                        <AlertsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/integrations"
+                    element={
+                      <PageErrorBoundary pageName="Integrations">
+                        <IntegrationsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/performance"
+                    element={
+                      <PageErrorBoundary pageName="Performance">
+                        <PerformancePage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route
+                    path="/reports"
+                    element={
+                      <PageErrorBoundary pageName="Reports">
+                        <ReportsPage />
+                      </PageErrorBoundary>
+                    }
+                  />
+
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Suspense>
+            </AppLayout>
+          </WebSocketProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 
