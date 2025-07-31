@@ -199,3 +199,133 @@ export function formatObjectKey(key: string): string {
     .replace(/^./, str => str.toUpperCase())
     .trim()
 }
+
+/**
+ * Formata duração em segundos para formato legível
+ */
+export function formatDurationSeconds(seconds: number): string {
+  return formatDuration(seconds * 1000);
+}
+
+/**
+ * Formata tempo relativo (ex: "há 2 horas")
+ */
+export function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'agora mesmo';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `há ${diffInMinutes} minuto${diffInMinutes !== 1 ? 's' : ''}`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `há ${diffInHours} hora${diffInHours !== 1 ? 's' : ''}`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `há ${diffInDays} dia${diffInDays !== 1 ? 's' : ''}`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) {
+    return `há ${diffInMonths} mês${diffInMonths !== 1 ? 'es' : ''}`;
+  }
+
+  const diffInYears = Math.floor(diffInMonths / 12);
+  return `há ${diffInYears} ano${diffInYears !== 1 ? 's' : ''}`;
+}
+
+/**
+ * Formata velocidade de rede (bps para formato legível)
+ */
+export function formatBandwidth(bitsPerSecond: number): string {
+  const units = ['bps', 'Kbps', 'Mbps', 'Gbps', 'Tbps'];
+  let value = bitsPerSecond;
+  let unitIndex = 0;
+
+  while (value >= 1000 && unitIndex < units.length - 1) {
+    value /= 1000;
+    unitIndex++;
+  }
+
+  return `${value.toFixed(1)} ${units[unitIndex]}`;
+}
+
+/**
+ * Formata uptime em porcentagem
+ */
+export function formatUptime(uptime: number): string {
+  if (uptime >= 99.99) {
+    return '99.99%+';
+  }
+  return formatPercentage(uptime, 2);
+}
+
+/**
+ * Formata latência com unidade apropriada
+ */
+export function formatLatency(milliseconds: number): string {
+  if (milliseconds < 1) {
+    return `${(milliseconds * 1000).toFixed(0)}μs`;
+  } else if (milliseconds < 1000) {
+    return `${milliseconds.toFixed(1)}ms`;
+  } else {
+    return `${(milliseconds / 1000).toFixed(2)}s`;
+  }
+}
+
+/**
+ * Formata taxa de erro
+ */
+export function formatErrorRate(rate: number): string {
+  if (rate === 0) return '0%';
+  if (rate < 0.01) return '<0.01%';
+  return formatPercentage(rate, 2);
+}
+
+/**
+ * Formata throughput (requests per second)
+ */
+export function formatThroughput(rps: number): string {
+  if (rps < 1) {
+    return `${(rps * 60).toFixed(1)} req/min`;
+  } else if (rps < 1000) {
+    return `${rps.toFixed(1)} req/s`;
+  } else {
+    return `${(rps / 1000).toFixed(1)}K req/s`;
+  }
+}
+
+/**
+ * Formata range de datas
+ */
+export function formatDateRange(startDate: Date, endDate: Date): string {
+  const start = startDate.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
+  const end = endDate.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
+  return `${start} - ${end}`;
+}
+
+/**
+ * Formata diferença entre duas datas
+ */
+export function formatDateDiff(date1: Date, date2: Date): string {
+  const diffMs = Math.abs(date2.getTime() - date1.getTime());
+  return formatDuration(diffMs);
+}

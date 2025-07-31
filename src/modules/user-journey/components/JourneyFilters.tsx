@@ -410,14 +410,16 @@ export function JourneyFilters({ onFiltersChange, className }: JourneyFiltersPro
         <div className="space-y-2">
           <Label>Tipo de Coorte</Label>
           <Select
-            value={filters.cohortType || ''}
-            onValueChange={(value) => handleFilterChange('cohortType', value || undefined)}
+            value={filters.cohortType || 'all'}
+            onValueChange={(value) =>
+              handleFilterChange('cohortType', value === 'all' ? undefined : value)
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecionar tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="acquisition">Aquisição</SelectItem>
               <SelectItem value="behavioral">Comportamental</SelectItem>
             </SelectContent>

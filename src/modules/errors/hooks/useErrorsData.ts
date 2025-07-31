@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { errorsService, ErrorFilters } from '@/services/errors.service'
+import { errorsService, type ErrorFilters, } from '@/services/errors.service'
 import { QUERY_KEYS } from '@/lib/constants'
 
 export function useErrorGroups(filters: ErrorFilters = {}) {
@@ -43,7 +43,7 @@ export function useErrorOccurrences(groupId: string, options?: {
         ...options,
         page: pageParam
       }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: { page: number; totalCount: number; limit: number }) => {
       const totalPages = Math.ceil(lastPage.totalCount / (lastPage.limit || 50))
       if (lastPage.page < totalPages) {
         return lastPage.page + 1

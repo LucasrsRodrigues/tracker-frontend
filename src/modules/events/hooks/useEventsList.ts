@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
-import { eventsService, EventFilters } from '@/services/events.service'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { eventsService, type EventFilters } from '@/services/events.service'
 import { QUERY_KEYS } from '@/lib/constants'
 
 export function useEventsList(filters: EventFilters = {}) {
@@ -34,7 +34,7 @@ export function useEventsSearch(query: string, filters: EventFilters = {}) {
           limit: filters.limit || 50
         }
       }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: number) => {
       const totalPages = Math.ceil(lastPage.totalCount / (filters.limit || 50))
       const currentPage = filters.page || 1
       if (currentPage < totalPages) {

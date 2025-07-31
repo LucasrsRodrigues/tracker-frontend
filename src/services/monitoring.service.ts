@@ -1,3 +1,4 @@
+import type { SlaMetrics, SystemHealth } from '@/modules/monitoring/types/monitoring.types'
 import { apiClient } from './api-client'
 
 export interface SystemHealthStatus {
@@ -366,6 +367,150 @@ class MonitoringService {
   }> {
     return apiClient.get(`${this.baseUrl}/stats`, { period })
   }
+
+  // Mock data methods for development
+  private getMockProvidersStatus(): ProviderStatus[] {
+    return [
+      {
+        id: 'sendgrid',
+        name: 'SendGrid',
+        status: 'operational',
+        uptime: 99.95,
+        latency: 120,
+        successRate: 99.8,
+        lastIncident: new Date(Date.now() - 86400000 * 2),
+        slaCompliance: 99.9,
+        rateLimitStatus: {
+          current: 1500,
+          limit: 10000,
+          resetTime: new Date(Date.now() + 3600000)
+        }
+      },
+      {
+        id: 'stripe',
+        name: 'Stripe',
+        status: 'degraded',
+        uptime: 99.2,
+        latency: 250,
+        successRate: 98.5,
+        lastIncident: new Date(Date.now() - 3600000),
+        slaCompliance: 98.8,
+        rateLimitStatus: {
+          current: 890,
+          limit: 1000,
+          resetTime: new Date(Date.now() + 1800000)
+        }
+      }
+    ];
+  }
+
+  private getMockProviderStatus(providerId: string): ProviderStatus {
+    return this.getMockProvidersStatus().find(p => p.id === providerId) || this.getMockProvidersStatus()[0];
+  }
+
+  private getMockSystemHealth(): SystemHealth[] {
+    return [
+      {
+        service: 'API Gateway',
+        status: 'healthy',
+        uptime: 99.98,
+        responseTime: 45,
+        errorCount: 2,
+        lastCheck: new Date(),
+        dependencies: [
+          { name: 'Database', status: 'connected', latency: 5, errorRate: 0 },
+          { name: 'Redis', status: 'connected', latency: 2, errorRate: 0 }
+        ]
+      }
+    ];
+  }
+
+  private getMockSlaMetrics(): SlaMetrics[] {
+    return [
+      {
+        provider: 'SendGrid',
+        target: 99.9,
+        current: 99.95,
+        period: 'monthly',
+        trend: 'improving',
+        breaches: [],
+        history: [
+          { period: 'Jan', value: 99.8, target: 99.9 },
+          { period: 'Feb', value: 99.95, target: 99.9 },
+          { period: 'Mar', value: 99.95, target: 99.9 }
+        ]
+      }
+    ];
+  }
+
+  private getMockSlaIndicator(name: string, period: string): SLAIndicator {
+    return {
+      name,
+      current: 99.5,
+      target: 99.9,
+      status: 'at_risk',
+      period: period as 'monthly' | 'weekly' | 'daily',
+      trend: 'stable',
+      history: [
+        { period: 'Week 1', value: 99.8, target: 99.9 },
+        { period: 'Week 2', value: 99.5, target: 99.9 }
+      ]
+    };
+  }
+
+  private getMockLiveEvents(): LiveEvent[] {
+    return [
+      {
+        id: '1',
+        timestamp: new Date(),
+        type: 'user',
+        category: 'authentication',
+        action: 'login',
+        sessionId: 'sess_123',
+        severity: 'low',
+        data: { success: true },
+        provider: 'auth0'
+      }
+    ];
+  }
+
+  private getMockPerformanceMetrics(): PerformanceMetrics[] {
+    return [
+      {
+        endpoint: '/api/events',
+        method: 'POST',
+        avgResponseTime: 120,
+        requestsPerMinute: 450,
+        errorRate: 0.2,
+        p95ResponseTime: 280,
+        p99ResponseTime: 450,
+        status: 'optimal'
+      }
+    ];
+  }
+
+  private getMockCurrentPerformance(): PerformanceMetrics {
+    return this.getMockPerformanceMetrics()[0];
+  }
+
+  private getMockAlerts(): Array<any> {
+    return [
+      {
+        id: '1',
+        title: 'High Error Rate',
+        message: 'Error rate exceeded 5% threshold',
+        severity: 'high',
+        status: 'active',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        source: 'monitoring',
+        category: 'performance'
+      }
+    ];
+  }
 }
 
+
+
 export const monitoringService = new MonitoringService()
+

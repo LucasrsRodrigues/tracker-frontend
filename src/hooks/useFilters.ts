@@ -1,190 +1,88 @@
-import { useState, useCallback, useEffect } from 'react'
-import { LOCAL_STORAGE_KEYS } from '@/lib/constants'
+// src/hooks/useFilters.ts
+import { useState, useCallback, useEffect } from 'react';
 
-export interface FilterState {
-  dateRange?: {
-    from: Date
-    to: Date
-  }
-  categories?: string[]
-  actions?: string[]
-  providers?: string[]
-  deviceTypes?: string[]
-  userId?: string
-  sessionId?: string
-  search?: string
-  severity?: string[]
-  status?: string[]
-  [key: string]: any
+export interface SavedFilter<T = any> {
+  id: string;
+  name: string;
+  filters: T;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface SavedFilter {
-  id: string
-  name: string
-  filters: FilterState
-  createdAt: Date
-  updatedAt: Date
-}
-
-export function useFilters(initialFilters: FilterState = {}) {
-  const [filters, setFilters] = useState<FilterState>(initialFilters)
-  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+export function useFilters<T extends Record<string, any>>() {
+  const [savedFilters, setSavedFilters] = useState<SavedFilter<T>[]>([]);
 
   // Load saved filters from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEYS.SAVED_FILTERS)
+      const saved = localStorage.getItem('saved-filters');
       if (saved) {
-        const parsedFilters = JSON.parse(saved)
-        setSavedFilters(parsedFilters.map((filter: any) => ({
+        const parsed = JSON.parse(saved);
+        setSavedFilters(parsed.map((filter: any) => ({
           ...filter,
           createdAt: new Date(filter.createdAt),
           updatedAt: new Date(filter.updatedAt)
-        })))
+        })));
       }
     } catch (error) {
-      console.error('Failed to load saved filters:', error)
+      console.error('Error loading saved filters:', error);
     }
-  }, [])
+  }, []);
 
-  // Save filters to localStorage whenever savedFilters changes
+  // Save to localStorage whenever savedFilters changes
   useEffect(() => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.SAVED_FILTERS, JSON.stringify(savedFilters))
+      localStorage.setItem('saved-filters', JSON.stringify(savedFilters));
     } catch (error) {
-      console.error('Failed to save filters:', error)
+      console.error('Error saving filters:', error);
     }
-  }, [savedFilters])
+  }, [savedFilters]);
 
-  const updateFilters = useCallback((newFilters: Partial<FilterState>) => {
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }))
-  }, [])
-
-  const resetFilters = useCallback(() => {
-    setFilters(initialFilters)
-  }, [initialFilters])
-
-  const clearFilter = useCallback((key: string) => {
-    setFilters(prev => {
-      const updated = { ...prev }
-      delete updated[key]
-      return updated
-    })
-  }, [])
-
-  const saveCurrentFilters = useCallback((name: string) => {
-    const newFilter: SavedFilter = {
-      id: `filter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  const saveCurrentFilters = useCallback((name: string, filters: T) => {
+    const newFilter: SavedFilter<T> = {
+      id: `filter-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name,
-      filters: { ...filters },
+      filters,
       createdAt: new Date(),
       updatedAt: new Date()
-    }
+    };
 
-    setSavedFilters(prev => [...prev, newFilter])
-    return newFilter
-  }, [filters])
+    setSavedFilters(prev => [...prev, newFilter]);
+  }, []);
 
-  const loadSavedFilters = useCallback((savedFilter: SavedFilter) => {
-    setFilters(savedFilter.filters)
-  }, [])
+  const loadSavedFilters = useCallback((savedFilter: SavedFilter<T>) => {
+    return savedFilter.filters;
+  }, []);
 
   const deleteSavedFilter = useCallback((filterId: string) => {
-    setSavedFilters(prev => prev.filter(filter => filter.id !== filterId))
-  }, [])
+    setSavedFilters(prev => prev.filter(filter => filter.id !== filterId));
+  }, []);
 
-  const updateSavedFilter = useCallback((filterId: string, updates: Partial<Omit<SavedFilter, 'id' | 'createdAt'>>) => {
+  const updateSavedFilter = useCallback((filterId: string, name: string, filters: T) => {
     setSavedFilters(prev => prev.map(filter =>
       filter.id === filterId
-        ? { ...filter, ...updates, updatedAt: new Date() }
+        ? { ...filter, name, filters, updatedAt: new Date() }
         : filter
-    ))
-  }, [])
+    ));
+  }, []);
 
   const hasActiveFilters = useCallback(() => {
-    return Object.keys(filters).some(key => {
-      const value = filters[key]
-      if (Array.isArray(value)) {
-        return value.length > 0
-      }
-      return value !== undefined && value !== null && value !== ''
-    })
-  }, [filters])
+    // This is a generic implementation - specific hooks should override this
+    return false;
+  }, []);
 
   const getActiveFilterCount = useCallback(() => {
-    return Object.keys(filters).filter(key => {
-      const value = filters[key]
-      if (Array.isArray(value)) {
-        return value.length > 0
-      }
-      return value !== undefined && value !== null && value !== ''
-    }).length
-  }, [filters])
-
-  const buildQueryParams = useCallback(() => {
-    const params = new URLSearchParams()
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        if (Array.isArray(value) && value.length > 0) {
-          params.set(key, value.join(','))
-        } else if (value instanceof Date) {
-          params.set(key, value.toISOString())
-        } else if (typeof value === 'object' && value.from && value.to) {
-          // Handle date range
-          params.set(`${key}_from`, value.from.toISOString())
-          params.set(`${key}_to`, value.to.toISOString())
-        } else {
-          params.set(key, String(value))
-        }
-      }
-    })
-
-    return params
-  }, [filters])
-
-  const exportFilters = useCallback(() => {
-    return {
-      filters,
-      savedFilters,
-      timestamp: new Date().toISOString()
-    }
-  }, [filters, savedFilters])
-
-  const importFilters = useCallback((data: {
-    filters?: FilterState
-    savedFilters?: SavedFilter[]
-  }) => {
-    if (data.filters) {
-      setFilters(data.filters)
-    }
-    if (data.savedFilters) {
-      setSavedFilters(data.savedFilters.map(filter => ({
-        ...filter,
-        createdAt: new Date(filter.createdAt),
-        updatedAt: new Date(filter.updatedAt)
-      })))
-    }
-  }, [])
+    // This is a generic implementation - specific hooks should override this
+    return 0;
+  }, []);
 
   return {
-    filters,
-    setFilters,
-    updateFilters,
-    resetFilters,
-    clearFilter,
     savedFilters,
     saveCurrentFilters,
     loadSavedFilters,
     deleteSavedFilter,
     updateSavedFilter,
     hasActiveFilters,
-    getActiveFilterCount,
-    buildQueryParams,
-    exportFilters,
-    importFilters
-  }
+    getActiveFilterCount
+  };
 }
