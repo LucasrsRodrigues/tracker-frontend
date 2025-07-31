@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { reportsService, ReportConfig } from '@/services/reports.service'
+import { reportsService, type ReportConfig } from '@/services/reports.service'
 import { QUERY_KEYS } from '@/lib/constants'
 import { toast } from 'sonner'
 

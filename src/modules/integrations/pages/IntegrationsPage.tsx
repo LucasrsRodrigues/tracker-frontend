@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { ProvidersOverview } from '../components/ProvidersOverview';
 import { ProviderDetails } from '../components/ProviderDetails';
 import { WebhookMonitor } from '../components/WebhookMonitor';
-import { SlaIndicators } from '../components/SlaIndicators';
+// import { SlaIndicators } from '../components/SlaIndicators';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Provider } from '../types/integrations.types';
+import { SlaIndicators } from '@/modules/monitoring/components/SlaIndicators';
 
 export function IntegrationsPage() {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);

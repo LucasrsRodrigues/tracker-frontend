@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { alertsService, AlertFilters } from '@/services/alerts.service'
+import { alertsService, type AlertFilters } from '@/services/alerts.service'
 import { QUERY_KEYS } from '@/lib/constants'
 import { toast } from 'sonner'
 

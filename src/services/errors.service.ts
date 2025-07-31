@@ -18,6 +18,77 @@ export interface ErrorFilters {
   sortOrder?: 'asc' | 'desc'
 }
 
+// Adicione este interface no topo do arquivo errors.service.ts, junto com os outros interfaces
+
+export interface ErrorDashboardData {
+  overview: {
+    totalErrors: number
+    totalGroups: number
+    newErrors24h: number
+    resolvedErrors24h: number
+    errorRate: number
+    avgResolutionTime: number
+    criticalErrors: number
+    affectedUsers: number
+    trend: {
+      direction: 'up' | 'down' | 'stable'
+      percentage: number
+    }
+  }
+
+  recentActivity: {
+    timestamp: Date
+    type: 'new_error' | 'resolved' | 'spike' | 'improvement'
+    title: string
+    description: string
+    severity: 'low' | 'medium' | 'high' | 'critical'
+    groupId?: string
+  }[]
+
+  topErrorGroups: Array<{
+    group: ErrorGroup
+    impactScore: number
+    trend: {
+      direction: 'up' | 'down' | 'stable'
+      percentage: number
+    }
+  }>
+
+  severityBreakdown: Array<{
+    severity: 'low' | 'medium' | 'high' | 'critical'
+    count: number
+    percentage: number
+    trend: number
+  }>
+
+  providerBreakdown: Array<{
+    provider: string
+    count: number
+    errorRate: number
+    percentage: number
+    status: 'healthy' | 'warning' | 'critical'
+  }>
+
+  timeSeriesData: Array<{
+    timestamp: Date
+    totalErrors: number
+    newGroups: number
+    resolvedGroups: number
+    criticalErrors: number
+    affectedUsers: number
+  }>
+
+  insights: Array<{
+    type: 'spike' | 'new_error' | 'regression' | 'improvement' | 'pattern'
+    title: string
+    description: string
+    severity: 'info' | 'warning' | 'critical'
+    affectedUsers: number
+    recommendations: string[]
+    data: Record<string, any>
+  }>
+}
+
 export interface ErrorOccurrence {
   id: string
   groupId: string
@@ -348,6 +419,18 @@ class ErrorsService {
       ...filters,
       startDate: filters.startDate?.toISOString(),
       endDate: filters.endDate?.toISOString()
+    })
+  }
+
+  async getErrorDashboard(filters: ErrorFilters = {}): Promise<ErrorDashboardData> {
+    return apiClient.get(`${this.baseUrl}/dashboard`, {
+      ...filters,
+      startDate: filters.startDate?.toISOString(),
+      endDate: filters.endDate?.toISOString(),
+      severity: filters.severity?.join(','),
+      status: filters.status?.join(','),
+      providers: filters.providers?.join(','),
+      categories: filters.categories?.join(',')
     })
   }
 

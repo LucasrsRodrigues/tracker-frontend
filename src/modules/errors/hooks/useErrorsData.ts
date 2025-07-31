@@ -1,6 +1,6 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
-import { errorsService, type ErrorFilters, } from '@/services/errors.service'
 import { QUERY_KEYS } from '@/lib/constants'
+import { errorsService, type ErrorFilters, type ErrorDashboardData } from '@/services/errors.service'
 
 export function useErrorGroups(filters: ErrorFilters = {}) {
   return useInfiniteQuery({
@@ -18,6 +18,15 @@ export function useErrorGroups(filters: ErrorFilters = {}) {
       return undefined
     },
     staleTime: 30000, // 30 seconds
+  })
+}
+
+export function useErrorDashboard(filters: ErrorFilters = {}) {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.ERRORS, 'dashboard', filters],
+    queryFn: () => errorsService.getErrorDashboard(filters),
+    staleTime: 60000, // 1 minute
+    refetchInterval: 300000, // 5 minutes for dashboard auto-refresh
   })
 }
 
