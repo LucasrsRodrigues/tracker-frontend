@@ -74,7 +74,7 @@ export function AlertHistory() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {Array.from({ length, 10 }).map((_, i) => (
+            {Array.from({ length: 10 }).map((_, i) => (
               <div key={i} className="h-20 bg-muted animate-pulse rounded" />
             ))}
           </div>
